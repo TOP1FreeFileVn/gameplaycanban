@@ -5,14 +5,14 @@ using UnityEngine;
 public class AttackState : EnemyState
 {
     public AttackState(EnemyController _enemy) : base(_enemy) { }
+    private float nextTimeToAttack = 0f;
     public override void Enter()
     {
-        Debug.Log("Dang bam");
+        enemy.OffBoolRun();
     }
 
     public override void Tick()
     {
-        enemy.MoveTowardsPlayer();
         if (!enemy.IsPlayerInSight())
         {
             enemy.ChangeState(new IdleState(enemy));
@@ -21,7 +21,11 @@ public class AttackState : EnemyState
         {
             enemy.ChangeState(new ChaseState(enemy));
         }
-       
+        if(Time.time > nextTimeToAttack)
+        {
+            enemy.TriggerAttack();
+            nextTimeToAttack = Time.time + 1f / enemy.currentAttackSpeed;
+        }
 
     }
 

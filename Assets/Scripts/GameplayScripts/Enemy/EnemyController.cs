@@ -2,52 +2,41 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour
+public class EnemyController : BaseCharacter
 {
-    private EnemyState currentState;
-    [Header("Keo enemy data vao day cho toi")]
+    [Header("Enemy Specific")]
     public EnemyStats enemyStats;
-    private GameObject playerGameObject;
+    private EnemyState currentState;
+
     private Transform player;
-    [SerializeField] private float _currentHealth;
-    [SerializeField] private float _currentSpeed;
-    [SerializeField] private float _currentRange;
-    
-    public float currentHealth => _currentHealth;
-    public float currentSpeed => _currentSpeed;
-    public float currentRange => _currentRange;
+    private Transform pos;
 
-    
+    [Header("Boid Settings")]
+    public float neighborRadius = 1.5f;
+    public float separationForce = 2f;
+    public LayerMask enemyLayer;
+
     public float enemySight = 10f;
-
-    public GameObject healthBarPrefab;
-    private HealBar healthBar;
-    private float _maxHealth;
-    void Start()
+    protected override void Start()
     {
-        playerGameObject = GameObject.FindGameObjectWithTag("Player");
-        if (playerGameObject != null) 
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null) player = playerObj.transform;
+
+        if (enemyStats != null)
         {
-            player = playerGameObject.transform;
-        }
-        
-        if(healthBarPrefab != null)
-        {
-            GameObject healthBarGo = Instantiate(healthBarPrefab,transform.position + Vector3.up * 2f,Quaternion.identity,transform);
-            healthBar = healthBarGo.GetComponent<HealBar>();
-        }
-        if(enemyStats != null)
-        {
-            SetUpStats(enemyStats.baseHealth, enemyStats.moveSpeed, enemyStats.rangeAttack);
-            _maxHealth = enemyStats.baseHealth;
-            if(healthBar != null)
+            
+            float finalSpeed = enemyStats.moveSpeed;
+            if (playerObj != null)
             {
-                healthBar.SetMaxHealth();
+                finalSpeed -= playerObj.GetComponent<PlayerController>().currentSpeed;
             }
+
+            InitStats(enemyStats.baseHealth, finalSpeed,enemyStats.attackRange,enemyStats.attackSpeed);
         }
+        healthBarOffset = 2f;
+        base.Start();
 
         ChangeState(new IdleState(this));
-
     }
 
     void Update()
@@ -65,37 +54,6 @@ public class EnemyController : MonoBehaviour
         }
         currentState = newState;
         currentState.Enter();
-    }
-
-
-    public void TakeDamage(float damageAmount)
-    {
-
-        _currentHealth -= damageAmount;
-        if(healthBar != null)
-        {
-            healthBar.UpdateHealth(_currentHealth, _maxHealth);
-        }
-        if(_currentHealth < 0)
-        {
-            _currentHealth = 0;
-            Die();
-        }
-    }
-    public void Die()
-    {
-        if(healthBar != null)
-        {
-            Destroy(healthBar.gameObject);
-        }
-        Destroy(gameObject);
-    }
-    //Data
-    private void SetUpStats(float hp,float speed,float range)
-    {
-        _currentHealth = hp;
-        _currentSpeed = speed - playerGameObject.GetComponent<PlayerController>().currentSpeed;
-        _currentRange = range;
     }
 
 
@@ -118,7 +76,80 @@ public class EnemyController : MonoBehaviour
     }
     public void MoveTowardsPlayer()
     {
-        transform.position = Vector3.MoveTowards(transform.position, player.position, Time.deltaTime *  currentSpeed);
+        Vector2 seek = (player.position - transform.position).normalized;
+        Vector2 separation = CalculateSeparation();
+
+        Vector2 moveDir =
+            seek +
+            separation * separationForce;
+
+        moveDir.Normalize();
+
+        transform.position += (Vector3)(moveDir * currentSpeed * Time.deltaTime);
+    }
+    //Anm
+    public void TriggerAttack()
+    {
+        if (_animator != null)
+        {
+            _animator.SetTrigger("Attack");
+        }
+    }
+    
+    public void BoolRun()
+    {
+        if (_animator != null)
+        {
+            _animator.SetBool("IsRun", true);
+        }
+    }
+    public void OffBoolRun()
+    {
+        if (_animator != null)
+        {
+            _animator.SetBool("IsRun", false);
+        }
+    }
+
+    private Collider2D[] neighborColliders = new Collider2D[10];
+
+    Vector2 CalculateSeparation()
+    {
+
+        int count = Physics2D.OverlapCircleNonAlloc(
+            transform.position,
+            neighborRadius,
+            neighborColliders,
+            enemyLayer
+        );
+
+        Vector2 separation = Vector2.zero;
+        int separationCount = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D col = neighborColliders[i];
+
+            if (col.gameObject == gameObject) continue;
+
+            Vector2 diff = (Vector2)(transform.position - col.transform.position);
+            float dist = diff.sqrMagnitude; 
+
+
+            if (dist > 0.01f)
+            {
+           
+                separation += diff / dist;
+                separationCount++;
+            }
+        }
+
+        if (separationCount > 0)
+        {
+            separation /= separationCount;
+        }
+
+        return separation;
     }
 
 }

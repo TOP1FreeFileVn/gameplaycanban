@@ -35,8 +35,9 @@ public class LevelProgressUI : MonoBehaviour
             float ratio = currentAccumlatedLength / totalLevelLength;
             GameObject newFlag = Instantiate(flagPrefab, flagsContainer);
             RectTransform flagRect = newFlag.GetComponent<RectTransform>();
+            float xOffSet = totalLevelLength / 5;
             float xPosx = barWidth * ratio;
-            flagRect.anchoredPosition = new Vector2(xPosx, 0f);
+            flagRect.anchoredPosition = new Vector2(xPosx - xOffSet, 0f);
 
         }
         UpdateProgress(0);

@@ -6,11 +6,12 @@ TagManager:
   tags:
   - Auth
   - Enemy
+  - firePoint
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Enemy
   - Water
   - UI
   - 

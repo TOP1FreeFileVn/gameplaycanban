@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: StepData
   m_EditorClassIdentifier: 
   stepIndex: 0
-  length: 100
+  length: 30
   waves:
   - {fileID: 11400000, guid: 06d610d6ebf54ab46bae58db6e2cb293, type: 2}

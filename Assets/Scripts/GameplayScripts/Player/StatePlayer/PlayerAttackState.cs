@@ -20,8 +20,10 @@ public class PlayerAttackState : PlayerState
         }
         if(Time.time > nextTimeToFire)
         {
+            player.TriggerAttack();
+            player.AttackSpeed();
             player.Shoot(target);
-            nextTimeToFire = Time.time + 1f / player.fireRate;
+            nextTimeToFire = Time.time + 1f / player.currentAttackSpeed;
         }
     }
     public override void Exit() 

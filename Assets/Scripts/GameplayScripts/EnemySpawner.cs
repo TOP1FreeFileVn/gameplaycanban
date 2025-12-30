@@ -6,7 +6,6 @@ public class EnemySpawner : MonoBehaviour
 {
     [Header("Data Reference")]
     public LevelData currentLevelData;
-    
     [Header("Spawn")]
     [SerializeField] private float _spawnDistanceX = 7f;
     [SerializeField] private float _vertiacalExtentY = 8f;
@@ -19,7 +18,7 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private int enemySpawnedInWave = 0;
     [SerializeField] private float spawnTimer = 0f;
     [SerializeField] private bool isStepsFinished = false;
-    
+    [SerializeField] private float distanceGone;
     private void Start()
     {
         _segmentHeight = _vertiacalExtentY / NUMBER_OF_SPAWN;
@@ -39,7 +38,7 @@ public class EnemySpawner : MonoBehaviour
         if (isStepsFinished) return;
         if (currentLevelData == null) return;
         StepData currentStep = currentLevelData.steps[currentStepIndex];
-        if (currentStep.waves == null || currentStep.waves.Length == 0)
+        if (distanceGone > currentStep.length * (currentStepIndex + 1) ||  currentStep.waves == null || currentStep.waves.Length == 0)
         {
             NextStep();
             return;
@@ -51,6 +50,9 @@ public class EnemySpawner : MonoBehaviour
             SpawnEnemy(currentWave);
             spawnTimer = 0f;
         }
+    }
+    public void GetDistanceGone(float dis) {
+        distanceGone = dis;
     }
     private Vector3 GetSpawnPosition()
     {
@@ -79,11 +81,7 @@ public class EnemySpawner : MonoBehaviour
         {
             GameObject newEnemy = Instantiate(waveInfo.enemyPrefab,spawnPosition,Quaternion.identity);
             EnemyStats stats = newEnemy.GetComponent<EnemyController>().enemyStats;
-            if(stats != null)
-            {
-                Debug.Log("Stats");
-            }
-            Debug.Log($"Da trieu hoi ra quai thu : {newEnemy.name} | Step: {currentStepIndex} | Wave: {currentWaveIndex}");
+            Debug.Log($"Da trieu hoi ra quai thu : {newEnemy.name} | Step: {currentStepIndex + 1} | Wave: {currentWaveIndex + 1}");
         }
         enemySpawnedInWave++;
     }
@@ -94,10 +92,6 @@ public class EnemySpawner : MonoBehaviour
         enemySpawnedInWave = 0;
         spawnTimer = 0f;
         StepData currentStep = currentLevelData.steps[currentStepIndex];
-        if(currentWaveIndex >= currentStep.waves.Length)
-        {
-            NextStep();
-        }
     }
     private void NextStep()
     {

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WaveData
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 7662522829912930308, guid: 5a2cefdeab67a0f4d9def3aedb1dcf1f, type: 3}
-  enemyCount: 10
-  spawnInterval: 1.5
+  enemyCount: 100
+  spawnInterval: 0.5
   hpMultiple: 1
   speedMultiplier: 1

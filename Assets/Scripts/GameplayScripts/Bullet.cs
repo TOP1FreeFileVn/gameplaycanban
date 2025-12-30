@@ -4,24 +4,22 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
+    private bool hasHit = false;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (hasHit) return;
+
         if (collision.CompareTag("Enemy"))
         {
-            Debug.Log("Trung");
-            collision.GetComponent<EnemyController>().TakeDamage(50);
+            hasHit = true;
+
+            EnemyController enemy = collision.GetComponent<EnemyController>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(50);
+            }
+
             Destroy(gameObject);
         }
     }

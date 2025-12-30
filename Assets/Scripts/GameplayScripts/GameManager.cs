@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public float distanceGone = 0f;
     private float startZ;
     public PlayerController player;
+    public EnemySpawner enemySpawner;
     void Start()
     {
         isLevelFinished = false;
@@ -27,8 +28,7 @@ public class GameManager : MonoBehaviour
         if (isLevelFinished) return; 
         distanceGone = distanceGone+ player.currentSpeed * Time.deltaTime;
         progressUI.UpdateProgress(distanceGone);
-
-        
+        enemySpawner.GetDistanceGone(distanceGone);
         if (distanceGone >= maxLevelLength)
         {
             WinGame();

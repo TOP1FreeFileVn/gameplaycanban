@@ -7,7 +7,7 @@ public class ChaseState : EnemyState
     public ChaseState(EnemyController _enemy) : base(_enemy) { }
     public override void Enter()
     {
-        Debug.Log("Dang duoi");
+        enemy.BoolRun();
     }
 
     public override void Tick()
@@ -17,7 +17,7 @@ public class ChaseState : EnemyState
         {
             enemy.ChangeState(new AttackState(enemy));
         }
-        if (!enemy.IsPlayerInSight())
+        else if (!enemy.IsPlayerInSight())
         {
             enemy.ChangeState(new IdleState(enemy));
         }
@@ -26,6 +26,6 @@ public class ChaseState : EnemyState
 
     public override void Exit()
     {
-
+        enemy.OffBoolRun();
     }
 }

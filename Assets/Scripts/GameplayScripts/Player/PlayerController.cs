@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : BaseCharacter
 {
     private string enemyTag = "Enemy";
     public Transform firePoint;
     private PlayerState currentState;
+
+
     [Header("Keo player data vao day cho toi")]
     public PlayerStatsData playerStatsData;
     public WeaponStats weaponStats;
@@ -14,12 +16,6 @@ public class PlayerController : MonoBehaviour
     private GameObject _bulletPrefab;
     [SerializeField] private float _bulletSpeed = 0f;
     [SerializeField] private float _fireRate = 0f;
-
-    [SerializeField] private float _currentHealth = 0f;
-    [SerializeField] private float _currentSpeed = 0f;
-
-    public float currentHealth => _currentHealth;
-    public float currentSpeed => _currentSpeed;
 
     public float fireRate => _fireRate;
     public float bulletSpeed => _bulletSpeed;
@@ -31,28 +27,19 @@ public class PlayerController : MonoBehaviour
     public Transform currentTarget => _currentTarget;
 
 
-    public GameObject healthBarPrefab;
-    private HealBar healthBar;
-    private float _maxHealth;
-
-    void Start()
+    protected override void Start()
     {
-        if (healthBarPrefab != null)
-        {
-            GameObject healthBarGo = Instantiate(healthBarPrefab, transform.position + Vector3.up * 1f, Quaternion.identity, transform);
-            healthBar = healthBarGo.GetComponent<HealBar>();
-        }
         if (playerStatsData != null)
         {
-            SetUp(playerStatsData.maxHealth, playerStatsData.moveSpeed);
-            _maxHealth = playerStatsData.maxHealth;
-            if (healthBar != null)
-            {
-                healthBar.SetMaxHealth();
-            }
+            InitStats(playerStatsData.maxHealth, playerStatsData.moveSpeed,playerStatsData.attackSpeed,playerStatsData.attackRange);
         }
-        
-        SetUpWeapon(weaponStats.fireRate, weaponStats.bulletSpeed, weaponStats.bulletPrefab);
+        healthBarOffset = 1f; 
+        base.Start();
+        if (weaponStats != null)
+        {
+            SetUpWeapon(weaponStats.fireRate, weaponStats.bulletSpeed, weaponStats.bulletPrefab);
+        }
+
         ChangeState(new PlayerIdleState(this));
     }
 
@@ -64,24 +51,6 @@ public class PlayerController : MonoBehaviour
         }
        
     }
-    public void TakeDamage(float damageAmount)
-    {
-
-        _currentHealth -= damageAmount;
-        if (healthBar != null)
-        {
-            healthBar.UpdateHealth(_currentHealth, _maxHealth);
-        }
-        if (_currentHealth < 0)
-        {
-            _currentHealth = 0;
-            Die();
-        }
-    }
-    public void Die()
-    {
-        Destroy(gameObject);
-    }
     public void ChangeState(PlayerState newState)
     {
         if (currentState != null)
@@ -90,11 +59,6 @@ public class PlayerController : MonoBehaviour
         }
         currentState = newState;
         currentState.Enter();
-    }
-    private void SetUp(float hp, float speed)
-    {
-        _currentHealth = hp;
-        _currentSpeed = speed;
     }
     private void SetUpWeapon(float rate,float bulletsp , GameObject bullet)
     {
@@ -155,10 +119,25 @@ public class PlayerController : MonoBehaviour
     public void Shoot(Transform target)
     {
         Vector3 dir = target.position - firePoint.position;
-        float angle = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
-        firePoint.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        firePoint.rotation = Quaternion.Euler(0, 0, angle);
         GameObject bulletGo = Instantiate(_bulletPrefab, firePoint.position, firePoint.rotation);
         Rigidbody2D rb = bulletGo.GetComponent<Rigidbody2D>();
         rb.AddForce(_bulletSpeed * dir.normalized, ForceMode2D.Impulse);
+    }
+    //Anm
+    public void TriggerAttack()
+    {
+        if(_animator  != null)
+        {
+            _animator.SetTrigger("Shoot");
+        }
+    }
+    public void AttackSpeed()
+    {
+        if (_animator != null)
+        {
+            _animator.SetFloat("AttackSpeed",currentAttackSpeed);
+        }
     }
 }

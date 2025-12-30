@@ -7,11 +7,12 @@ public class IdleState : EnemyState
     public IdleState(EnemyController _enemy) :base (_enemy){}
     public override void Enter()
     {
-        Debug.Log("bat dau trang thai idle");
+
     }
 
     public override void Tick()
     {
+
         if (enemy.IsPlayerInSight())
         {
             enemy.ChangeState(new ChaseState(enemy));
